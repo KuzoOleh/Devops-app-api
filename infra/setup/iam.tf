@@ -29,6 +29,7 @@ data "aws_iam_policy_document" "tf_backend" {
       "arn:aws:s3:::${var.tf_state_bucket}/tf-state-deploy-env/*"
     ]
   }
+
   statement {
     effect = "Allow"
     actions = [
@@ -37,7 +38,7 @@ data "aws_iam_policy_document" "tf_backend" {
       "dynamodb:PutItem",
       "dynamodb:DeleteItem"
     ]
-    resources = ["arn:aws:dynamodb:*:*:table/${var.tf_state_lock_table}"]
+    resources = ["arn:aws:dynamodb:${var.aws_region}:${var.aws_account_id}:table/${var.tf_state_lock_table}"]
   }
 }
 
