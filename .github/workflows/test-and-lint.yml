@@ -6,7 +6,7 @@ on:
         DOCKERHUB_USER:
             required: true
             description: "Username for DockerHub auth"
-        DOCKERHUN_TOKEN:
+        DOCKERHUB_TOKEN:
             required: true
             description: "Token for DockerHub auth"
 
