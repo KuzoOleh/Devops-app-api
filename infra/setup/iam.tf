@@ -28,8 +28,13 @@ data "aws_iam_policy_document" "tf_backend" {
   }
 
   statement {
-    effect  = "Allow"
-    actions = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+      "s3:HeadObject"  # Added HeadObject permission
+    ]
     resources = [
       "arn:aws:s3:::${var.tf_state_bucket}/tf-state-deploy/*",
       "arn:aws:s3:::${var.tf_state_bucket}/tf-state-deploy-env/*"
@@ -47,6 +52,7 @@ data "aws_iam_policy_document" "tf_backend" {
     resources = ["arn:aws:dynamodb:*:*:table/${var.tf_state_lock_table}"]
   }
 }
+
 
 
 resource "aws_iam_policy" "tf_backend" {
