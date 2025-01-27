@@ -33,7 +33,7 @@ data "aws_iam_policy_document" "tf_backend" {
       "s3:GetObject",
       "s3:PutObject",
       "s3:DeleteObject",
-      "s3:HeadObject"  # Added HeadObject permission
+      "s3:HeadObject" # Added HeadObject permission
     ]
     resources = [
       "arn:aws:s3:::${var.tf_state_bucket}/tf-state-deploy/*",
