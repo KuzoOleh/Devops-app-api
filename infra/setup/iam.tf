@@ -1,6 +1,6 @@
-###############################################
-# Create IAM user and policies for CD account #
-###############################################
+#######################################################################
+# Create IAM user and policies for Continuous Deployment (CD) account #
+#######################################################################
 
 resource "aws_iam_user" "cd" {
   name = "recipe-app-api-cd"
@@ -10,9 +10,9 @@ resource "aws_iam_access_key" "cd" {
   user = aws_iam_user.cd.name
 }
 
-###########################################################
-# Policy for Terraform backend to S3 and Dynamo DB access #
-###########################################################
+#########################################################
+# Policy for Teraform backend to S3 and DynamoDB access #
+#########################################################
 
 data "aws_iam_policy_document" "tf_backend" {
   statement {
@@ -29,7 +29,6 @@ data "aws_iam_policy_document" "tf_backend" {
       "arn:aws:s3:::${var.tf_state_bucket}/tf-state-deploy-env/*"
     ]
   }
-
   statement {
     effect = "Allow"
     actions = [
@@ -43,8 +42,8 @@ data "aws_iam_policy_document" "tf_backend" {
 }
 
 resource "aws_iam_policy" "tf_backend" {
-  name        = "${aws_iam_user.cd.name}-tf-s3-dynamdb"
-  description = "Allow user to use S3 and DynamoDB for TF backend policy"
+  name        = "${aws_iam_user.cd.name}-tf-s3-dynamodb"
+  description = "Allow user to use S3 and DynamoDB for TF backend resources"
   policy      = data.aws_iam_policy_document.tf_backend.json
 }
 
