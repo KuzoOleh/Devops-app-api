@@ -33,7 +33,7 @@ resource "aws_iam_policy" "task_ssm_policy" {
 
 resource "aws_iam_role_policy_attachment" "task_ssm_policy" {
   role       = aws_iam_role.app_task.name
-  policy_arn = aws_iam_policy.task_ssm_policy
+  policy_arn = aws_iam_policy.task_ssm_policy.arn
 }
 
 resource "aws_cloudwatch_log_group" "ecs_task_logs" {
@@ -182,5 +182,27 @@ resource "aws_security_group" "ecs_service" {
     security_groups = [
       aws_security_group.lb.id
     ]
+  }
+}
+
+
+resource "aws_ecs_service" "api" {
+  name                   = "${local.prefix}-api"
+  cluster                = aws_ecs_cluster.main.name
+  task_definition        = aws_ecs_task_definition.api.family
+  desired_count          = 1
+  launch_type            = "FARGATE"
+  platform_version       = "1.4.0"
+  enable_execute_command = true
+
+  network_configuration {
+    assign_public_ip = true
+
+    subnets = [
+      aws_subnet.public_a.id,
+      aws_subnet.public_b.id
+    ]
+
+    security_groups = [aws_security_group.ecs_service.id]
   }
 }
