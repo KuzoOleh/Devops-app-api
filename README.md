@@ -1,6 +1,8 @@
 # Deployment Automation
 
-To clone this repo ```cd``` to selected folder use `git clone`:
+## Cloning the Repository
+
+To clone this repository, navigate to your desired folder and run:
 
 ```sh
 cd devops-app-api
@@ -9,114 +11,120 @@ git clone https://github.com/KuzoOleh/Devops-app-api.git
 
 ## Local Development
 
-### Running project
+### Prerequisites
 
-Docker is required in order to run this project locally.
+Ensure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed on your machine before proceeding.
 
-Follow the below steps to run a local development environment:
+### Running the Project
 
-1. Ensure [Docker Desktop](https://www.docker.com/products/docker-desktop/) is installed on your machine
+Follow these steps to start the local development environment:
 
-2. After cloning the project and ```cd``` to it in Terminal run the following:
+1. Clone the repository and navigate into the project directory:
 
-```sh
-docker compose up
-```
+    ```sh
+    cd devops-app-api
+    ```
 
-3. Browse the project at [http://127.0.0.1:8000/api/health-check/](http://127.0.0.1:8000/api/health-check/)
+2. Start the application using Docker Compose:
 
-### Creating superuser
+    ```sh
+    docker compose up
+    ```
 
-Since the deployed project is written in Python with Django you need to create superuser in order to access DJango admin.
+3. Open your browser and navigate to:
+   - [http://127.0.0.1:8000/api/health-check/](http://127.0.0.1:8000/api/health-check/)
 
-Follow the below steps:
+### Creating a Superuser
 
-1. Run the below command and follow the in terminal instructions:
-2. 
-```sh
-docker compose run --rm app sh -c "python manage.py createsuperuser"
-```
+Since the project uses Django, you need to create a superuser to access the Django admin panel:
 
-2. Browse the Django admin at [http://127.0.0.1:8000/admin] and login.
+1. Run the following command and follow the terminal instructions:
+
+    ```sh
+    docker compose run --rm app sh -c "python manage.py createsuperuser"
+    ```
+
+2. Access the Django admin panel at:
+   - [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin)
 
 ### Cleaning Storage
 
-To clear all storage (database included) and start clean:
+To remove all stored data (including the database) and start fresh:
 
 ```sh
 docker compose down --volumes
 docker compose up
 ```
 
-### AWS CLI
+## AWS CLI
 
-#### AWS CLI authentication
+### Authentication
 
-This project was deployed using AWS services and uses [aws-vault](https://github.com/99designs/aws-vault) to autenticate with the AWS CLI in the terminal.
+This project is deployed using AWS services and uses [aws-vault](https://github.com/99designs/aws-vault) for authentication.
 
-To autenticate: 
+Authenticate with the AWS CLI by running:
 
-```
+```sh
 aws-vault exec PROFILE --duration=<1,2,4 or 8 hours>
 ```
 
->Note: replace `PROFILE` with the name of the profile
+> **Note:** Replace `PROFILE` with your AWS profile name.
 
-To list profiles, run:
+To list available profiles:
 
-```
+```sh
 aws-vault list
 ```
 
-#### Task exec
+### ECS Task Execution
 
-[ECS Exec](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html) is used for manually running commands directly on the running containers.
+[ECS Exec](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html) is used for running commands directly on containers.
 
-To get shell access to the `ecs` task:
+To get shell access to an ECS task:
 
+```sh
+aws ecs execute-command \
+  --region REGION \
+  --cluster CLUSTER_NAME \
+  --task TASK_ID \
+  --container CONTAINER_NAME \
+  --interactive \
+  --command "/bin/sh"
 ```
-aws ecs execute-command --region REGION --cluster CLUSTER_NAME --task TASK_ID --container CONTAINER_NAME --interactive --command "/bin/sh"
-```
 
-Replace the following values in the above command:
+Replace the placeholders:
+- `REGION`: AWS region where the ECS cluster is located.
+- `CLUSTER_NAME`: The ECS cluster name.
+- `TASK_ID`: The running ECS task ID.
+- `CONTAINER_NAME`: The container name.
 
-- `REGION`: The AWS region where the ECS cluster is setup.
-- `CLUSTER_NAME`: The name of the ECS cluster.
-- `TASK_ID`: The ID of the running ECS task which you want to connect to.
-- `CONTAINER_NAME`: The name of the container to run the command on.
+## Terraform Commands
 
-### Terraform commands
+> **Note:** All Terraform-related commands must be run from the `infra/` directory **after authenticating with `aws-vault`**.
 
->Note: All commands that required to work with terraform should be run from the `infra/` directory of the project, and after authenticating with `aws-vault`
+To run any Terraform command inside Docker:
 
-To run any Terraform command through Docker, use the syntax below:
-
-```
+```sh
 docker compose run --rm terraform -chdir=TF_DIR COMMAND
 ```
 
-Where `TF_DIR` is the directory containing the Terraform (`setup` or `deploy`) and `COMMAND` is the Terraform command (e.g. `plan`).
+Replace:
+- `TF_DIR`: The Terraform directory (`setup` or `deploy`).
+- `COMMAND`: The Terraform command (e.g., `plan`, `apply`).
 
-### GitHub Actions Variables
+## GitHub Actions Configuration
 
-This section lists the GitHub Actions variables which need to be configured on the GitHub project.
+If using GitHub Actions, configure the following environment variables:
 
-> Note: This is only applicable if using GitHub Actions, if you're using GitLab, see [GitLab CI/CD Variables](#gitlab-cicd-variables) below.
+### Variables (Clear Text)
+- `AWS_ACCESS_KEY_ID` – Access key for the AWS IAM user created by Terraform (`cd_user_access_key_id`).
+- `AWS_ACCOUNT_ID` – Your AWS account ID.
+- `DOCKERHUB_USER` – Docker Hub username to avoid pull rate limits.
+- `ECR_REPO_APP` – URL for the app’s ECR Docker repository (`ecr_repo_app`).
+- `ECR_REPO_PROXY` – URL for the proxy’s ECR Docker repository (`ecr_repo_proxy`).
 
-If using GitHub Actions, variables are set as either **Variables** (clear text and readable) or **Secrets** (values hidden in logs).
-
-Variables:
-
-- `AWS_ACCESS_KEY_ID`: Access key for the CD AWS IAM user that is created by Terraform and output as `cd_user_access_key_id`.
-- `AWS_ACCOUNT_ID`: AWS Account ID taken from AWS directly.
-- `DOCKERHUB_USER`: Username for [Docker Hub](https://hub.docker.com/) for avoiding Docker Pull rate limit issues.
-- `ECR_REPO_APP`: URL for the Docker repo containing the app image output by Terraform as `ecr_repo_app`.
-- `ECR_REPO_PROXY`: URL for the Docker repo containing the proxy image output by Terraform as `ecr_repo_proxy`.
-
-Secrets:
-
-- `AWS_SECRET_ACCESS_KEY`: Secret key for `AWS_ACCESS_KEY_ID` set in variables, output by Terraform as `cd_user_access_key_secret`.
-- `DOCKERHUB_TOKEN`: Token created in `DOCKERHUB_USER` in [Docker Hub](https://hub.docker.com/).
-- `TF_VAR_DB_PASSWORD`: Password for the RDS database (make something up).
-- `TF_VAR_DJANGO_SECRET_KEY`: Secret key for the Django app (make something up).
-
+### Secrets (Hidden in Logs)
+- `AWS_SECRET_ACCESS_KEY` – Secret key corresponding to `AWS_ACCESS_KEY_ID`.
+- `DOCKERHUB_TOKEN` – Personal access token for Docker Hub.
+- `TF_VAR_DB_PASSWORD` – Password for the RDS database.
+- `TF_VAR_DJANGO_SECRET_KEY` – Secret key for the Django application.
