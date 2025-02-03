@@ -3,7 +3,7 @@
 To clone this repo ```cd``` to selected folder use `git clone`:
 
 ```sh
-cd <selected folder>
+cd devops-app-api
 git clone https://github.com/KuzoOleh/Devops-app-api.git
 ```
 
